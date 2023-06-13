@@ -5,19 +5,21 @@
 //  YouTube: YouTube.com/profgallaugher, Twitter: @gallaugher
 
 import SwiftUI
+import SwiftData
 
 struct ToDoListView: View {
     @State private var sheetIsPresented = false
-    @EnvironmentObject var toDosVM: ToDosViewModel
+    @Query var toDos: [ToDo]
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         NavigationStack {
             List {
-                ForEach(toDosVM.toDos) { toDo in
+                ForEach(toDos) { toDo in
                     HStack {
                         Image(systemName: toDo.isCompleted ? "checkmark.rectangle" : "rectangle")
                             .onTapGesture {
-                                toDosVM.toggleCompleted(toDo: toDo)
+                                toDo.isCompleted.toggle()
                             }
                         
                         NavigationLink {
@@ -27,25 +29,17 @@ struct ToDoListView: View {
                         }
                     }
                     .font(.title2)
+                    .swipeActions {
+                        Button("Delete", role: .destructive) {
+                            modelContext.delete(toDo)
+                        }
+                    }
                 }
-                // Shorthand calls to .onDelete and onMove here
-                .onDelete(perform: toDosVM.deleteToDo)
-                .onMove(perform: toDosVM.moveToDo)
-                // Traditional calls are below
-//.onDelete { indexSet in
-//    toDosVM.delete(indexSet: indexSet)
-//}
-//                .onMove { fromOffsets, toOffset in
-//                    toDosVM.move(fromOffsets: fromOffsets, toOffset: toOffset)
-//                }
             }
             .navigationTitle("To Do List")
             .navigationBarTitleDisplayMode(.automatic)
             .listStyle(.plain)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    EditButton()
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         sheetIsPresented.toggle()
@@ -63,9 +57,6 @@ struct ToDoListView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ToDoListView()
-            .environmentObject(ToDosViewModel())
-    }
+#Preview {
+    ToDoListView()
 }

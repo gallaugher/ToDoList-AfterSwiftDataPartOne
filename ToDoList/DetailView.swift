@@ -5,11 +5,12 @@
 //  YouTube: YouTube.com/profgallaugher, Twitter: @gallaugher
 
 import SwiftUI
+import SwiftData
 
 struct DetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var toDosVM: ToDosViewModel
     @State var toDo: ToDo
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         List {
@@ -46,7 +47,7 @@ struct DetailView: View {
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Save") {
-                    toDosVM.saveToDo(toDo: toDo)
+                    modelContext.insert(toDo)
                     dismiss()
                 }
             }
@@ -56,11 +57,9 @@ struct DetailView: View {
     }
 }
 
-struct DetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack {
-            DetailView(toDo: ToDo())
-                .environmentObject(ToDosViewModel())
-        }
+#Preview {
+    NavigationStack {
+        DetailView(toDo: ToDo())
+            .modelContainer(for: ToDo.self)
     }
 }
